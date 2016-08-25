@@ -1,9 +1,9 @@
-# Original credit: https://github.com/jpetazzo/dockvpn
+# Original credit: https://github.com/kylemanna/docker-openvpn
 
 # Smallest base image
-FROM hypriot/rpi-alpine-scratch
+FROM hypriot/rpi-alpine-scratch:v3.3
 
-MAINTAINER Roger Stark <rho.ajax@gmail.com>
+MAINTAINER Oleg Kovalenko <monstrenyatko@gmail.com>
 
 RUN echo "http://dl-4.alpinelinux.org/alpine/edge/community/" >> /etc/apk/repositories && \
     echo "http://dl-4.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositories && \
@@ -20,9 +20,6 @@ ENV EASYRSA_PKI $OPENVPN/pki
 ENV EASYRSA_VARS_FILE $OPENVPN/vars
 
 VOLUME ["/etc/openvpn"]
-
-# Internally uses port 1194/udp, remap using `docker run -p 443:1194/tcp`
-EXPOSE 1194/udp
 
 CMD ["ovpn_run"]
 

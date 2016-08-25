@@ -1,73 +1,120 @@
-# OpenVPN for Docker
-
-[![Build Status](https://travis-ci.org/kylemanna/docker-openvpn.svg)](https://travis-ci.org/kylemanna/docker-openvpn)
-[![Docker Stars](https://img.shields.io/docker/stars/kylemanna/openvpn.svg)](https://hub.docker.com/r/kylemanna/openvpn/)
-[![Docker Pulls](https://img.shields.io/docker/pulls/kylemanna/openvpn.svg)](https://hub.docker.com/r/kylemanna/openvpn/)
-[![ImageLayers](https://images.microbadger.com/badges/image/kylemanna/openvpn.svg)](https://microbadger.com/#/images/kylemanna/openvpn)
-
+# OpenVPN server for Docker on Raspberry Pi
 
 OpenVPN server in a Docker container complete with an EasyRSA PKI CA.
 
-Extensively tested on [Digital Ocean $5/mo node](http://bit.ly/1C7cKr3) and has
-a corresponding [Digital Ocean Community Tutorial](http://bit.ly/1AGUZkq).
-
 #### Upstream Links
 
-* Docker Registry @ [kylemanna/openvpn](https://hub.docker.com/r/kylemanna/openvpn/)
-* GitHub @ [kylemanna/docker-openvpn](https://github.com/kylemanna/docker-openvpn)
-
-#### Example Service
-
-* [backroad.io](http://beta.backroad.io?utm_source=kylemanna/openvpn&utm_medium=readme&utm_campaign=20150621) - powered by *kylemanna/openvpn*
+* Docker Registry @[monstrenyatko/rpi-openvpn-server](https://hub.docker.com/r/monstrenyatko/rpi-openvpn-server/)
+* GitHub @[monstrenyatko/rpi-openvpn-server](https://github.com/monstrenyatko/rpi-openvpn-server)
+* Fork of GitHub @[kylemanna/docker-openvpn](https://github.com/kylemanna/docker-openvpn)
 
 ## Quick Start
 
-* Create the `$OVPN_DATA` volume container, i.e. `OVPN_DATA="ovpn-data"`
+Configure and start two instances of the OpenVPN server to listen on `TCP` and `UDP` simultaneously.
+Server and client certificates are shared between both instances via Docker volume.
 
-        docker run --name $OVPN_DATA -v /etc/openvpn busybox
+* Create the `PKI` storage:
 
-* Initialize the `$OVPN_DATA` container that will hold the configuration files and certificates
+		OVPN_DATA_PKI="openvpn-server-data-pki"
+		docker volume create --name $OVPN_DATA_PKI
 
-        docker run --volumes-from $OVPN_DATA --rm kylemanna/openvpn ovpn_genconfig -u udp://VPN.SERVERNAME.COM
-        docker run --volumes-from $OVPN_DATA --rm -it kylemanna/openvpn ovpn_initpki
+* Create the `UDP` configuration storage:
 
-* Start OpenVPN server process
+		OVPN_DATA_UDP="openvpn-server-data-udp"
+		docker volume create --name $OVPN_DATA_UDP
 
-    - On Docker [version 1.2](http://blog.docker.com/2014/08/announcing-docker-1-2-0/) and newer
+* Initialize the `UDP` configuration files and certificates:
 
-            docker run --volumes-from $OVPN_DATA -d -p 1194:1194/udp --cap-add=NET_ADMIN kylemanna/openvpn
+		docker run -v $OVPN_DATA_UDP:/etc/openvpn --rm monstrenyatko/rpi-openvpn-server \
+			ovpn_genconfig -u udp://VPN.SERVER.DNS.NAME -n DNS.SERVER.IP -N
+		docker run -v $OVPN_DATA_UDP:/etc/openvpn --rm -it monstrenyatko/rpi-openvpn-server ovpn_initpki
 
-    - On Docker older than version 1.2
+* Move certificates to dedicated `PKI` storage:
 
-            docker run --volumes-from $OVPN_DATA -d -p 1194:1194/udp --privileged kylemanna/openvpn
+		docker run -v $OVPN_DATA_PKI:/mnt --rm -v $(pwd):/backup hypriot/armhf-busybox \
+			sh -c "find /mnt -mindepth 1 -delete"
 
-* Generate a client certificate without a passphrase
+		docker run -v $OVPN_DATA_UDP:/etc/openvpn -v $OVPN_DATA_PKI:/mnt \
+			--rm monstrenyatko/rpi-openvpn-server \
+			bash -c "shopt -s dotglob && mv -vf /etc/openvpn/pki/* /mnt/ && rmdir /etc/openvpn/pki"
 
-        docker run --volumes-from $OVPN_DATA --rm -it kylemanna/openvpn easyrsa build-client-full CLIENTNAME nopass
+* Generate a client certificate without a passphrase:
 
-* Retrieve the client configuration with embedded certificates
+		docker run -v $OVPN_DATA_PKI:/etc/openvpn/pki --rm -it monstrenyatko/rpi-openvpn-server \
+			easyrsa build-client-full CLIENT.NAME nopass
 
-        docker run --volumes-from $OVPN_DATA --rm kylemanna/openvpn ovpn_getclient CLIENTNAME > CLIENTNAME.ovpn
+* Retrieve the client configuration with embedded certificates:
+
+		docker run -v $OVPN_DATA_UDP:/etc/openvpn -v $OVPN_DATA_PKI:/etc/openvpn/pki \
+			--rm monstrenyatko/rpi-openvpn-server \
+			ovpn_getclient CLIENT.NAME > CLIENT.NAME.VPN.SERVER.DNS.NAME.ovpn
+
+* Start `UDP` server process:
+
+		docker run -v $OVPN_DATA_UDP:/etc/openvpn -v $OVPN_DATA_PKI:/etc/openvpn/pki \
+			--name openvpn-server-udp --restart unless-stopped -d -p 1194:1194/udp \
+			--cap-add=NET_ADMIN monstrenyatko/rpi-openvpn-server
+
+* Create the `TCP` configuration storage:
+
+		OVPN_DATA_TCP="openvpn-server-data-tcp"
+		docker volume create --name $OVPN_DATA_TCP
+
+* Initialize the `TCP` configuration files:
+
+		docker run -v $OVPN_DATA_TCP:/etc/openvpn --rm monstrenyatko/rpi-openvpn-server \
+			ovpn_genconfig -u tcp://VPN.SERVER.DNS.NAME -n DNS.SERVER.IP -N
+
+* Start `TCP` server process:
+
+		docker run -v $OVPN_DATA_TCP:/etc/openvpn -v $OVPN_DATA_PKI:/etc/openvpn/pki \
+			--name openvpn-server-tcp --restart unless-stopped -d -p 1194:1194/tcp \
+			--cap-add=NET_ADMIN monstrenyatko/rpi-openvpn-server
+
+## Backup
+
+#### Certificates (PKI)
+
+Backup archive `openvpn-pki.tar` will be created in current directory.
+
+* Create:
+
+		docker run -v $OVPN_DATA_PKI:/mnt --rm -v $(pwd):/backup hypriot/armhf-busybox \
+			tar cvf /backup/openvpn-pki.tar -C /mnt .
+
+* Cleanup and Restore:
+
+		docker run -v $OVPN_DATA_PKI:/mnt --rm -v $(pwd):/backup hypriot/armhf-busybox \
+			sh -c "find /mnt -mindepth 1 -delete"
+		docker run -v $OVPN_DATA_PKI:/mnt --rm -v $(pwd):/backup hypriot/armhf-busybox \
+			tar xvf /backup/openvpn-pki.tar -C /mnt
 
 ## Debugging Tips
 
+* Check configuration:
+
+		docker exec openvpn-server-udp cat /etc/openvpn/openvpn.conf
+
 * Create an environment variable with the name DEBUG and value of 1 to enable debug output (using "docker -e").
 
-        docker run --volumes-from $OVPN_DATA -p 1194:1194/udp --privileged -e DEBUG=1 kylemanna/openvpn
+		docker run -v $OVPN_DATA_UDP:/etc/openvpn -v $OVPN_DATA_PKI:/etc/openvpn/pki \
+			--name openvpn-server-udp --restart unless-stopped -d -p 1194:1194/udp \
+			--privileged -e DEBUG=1 \
+			--cap-add=NET_ADMIN monstrenyatko/rpi-openvpn-server
 
-* Test using a client that has openvpn installed correctly 
+* Test using a client that has OpenVPN installed correctly 
 
-        $ openvpn --config CLIENTNAME.ovpn
+		$ openvpn --config CLIENT.NAME.VPN.SERVER.DNS.NAME.ovpn
 
 * Run through a barrage of debugging checks on the client if things don't just work
 
-        $ ping 8.8.8.8    # checks connectivity without touching name resolution
-        $ dig google.com  # won't use the search directives in resolv.conf
-        $ nslookup google.com # will use search
+		$ ping 8.8.8.8          # checks connectivity without touching name resolution
+		$ dig google.com        # won't use the search directives in resolv.conf
+		$ nslookup google.com   # will use search
 
 ## How Does It Work?
 
-Initialize the volume container using the `kylemanna/openvpn` image with the
+Initialize the Docker container using the `monstrenyatko/rpi-openvpn-server` image with the
 included scripts to automatically generate:
 
 - Diffie-Hellman parameters
@@ -76,19 +123,20 @@ included scripts to automatically generate:
 - an EasyRSA CA key and certificate
 - a TLS auth key from HMAC security
 
-The OpenVPN server is started with the default run cmd of `ovpn_run`
+The OpenVPN server is started with the default run cmd of `ovpn_run`.
 
 The configuration is located in `/etc/openvpn`, and the Dockerfile
-declares that directory as a volume. It means that you can start another
-container with the `--volumes-from` flag, and access the configuration.
-The volume also holds the PKI keys and certs so that it could be backed up.
+declares that directory as a volume.
 
-To generate a client certificate, `kylemanna/openvpn` uses EasyRSA via the
-`easyrsa` command in the container's path.  The `EASYRSA_*` environmental
+Separate volume (mounted to `/etc/openvpn/pki`) holds the `PKI` keys
+and certificates so that it could be backed up.
+
+To generate a client certificate, `monstrenyatko/rpi-openvpn-server` uses EasyRSA via the
+`easyrsa` command in the container's path. The `EASYRSA_*` environmental
 variables place the PKI CA under `/etc/openvpn/pki`.
 
-Conveniently, `kylemanna/openvpn` comes with a script called `ovpn_getclient`,
-which dumps an inline OpenVPN client configuration file.  This single file can
+Conveniently, `monstrenyatko/rpi-openvpn-server` comes with a script called `ovpn_getclient`,
+which dumps an inline OpenVPN client configuration file. This single file can
 then be given to a client for access to the VPN.
 
 To enable Two Factor Authentication for clients (a.k.a. OTP) see [this document](/docs/otp.md).
@@ -115,18 +163,18 @@ resolvers like those of Google (8.8.4.4 and 8.8.8.8) or OpenDNS
 
 ## Security Discussion
 
-The Docker container runs its own EasyRSA PKI Certificate Authority.  This was
-chosen as a good way to compromise on security and convenience.  The container
+The Docker container runs its own EasyRSA PKI Certificate Authority. This was
+chosen as a good way to compromise on security and convenience. The container
 runs under the assumption that the OpenVPN container is running on a secure
 host, that is to say that an adversary does not have access to the PKI files
-under `/etc/openvpn/pki`.  This is a fairly reasonable compromise because if an
+under `/etc/openvpn/pki`. This is a fairly reasonable compromise because if an
 adversary had access to these files, the adversary could manipulate the
 function of the OpenVPN server itself (sniff packets, create a new PKI CA, MITM
 packets, etc).
 
 * The certificate authority key is kept in the container by default for
-  simplicity.  It's highly recommended to secure the CA key with some
-  passphrase to protect against a filesystem compromise.  A more secure system
+  simplicity. It's highly recommended to secure the CA key with some
+  passphrase to protect against a filesystem compromise. A more secure system
   would put the EasyRSA PKI CA on an offline system (can use the same Docker
   image and the script [`ovpn_copy_server_files`](/docs/paranoid.md) to accomplish this).
 * It would be impossible for an adversary to sign bad or forged certificates
@@ -146,46 +194,39 @@ packets, etc).
 
 This means that it will function correctly (after Docker itself is setup) on
 all distributions Linux distributions such as: Ubuntu, Arch, Debian, Fedora,
-etc.  Furthermore, an old stable server can run a bleeding edge OpenVPN server
+etc. Furthermore, an old stable server can run a bleeding edge OpenVPN server
 without having to install/muck with library dependencies (i.e. run latest
 OpenVPN with latest OpenSSL on Ubuntu 12.04 LTS).
 
 ### It Doesn't Stomp All Over the Server's Filesystem
 
-Everything for the Docker container is contained in two images: the ephemeral
-run time image (kylemanna/openvpn) and the data image (using busybox as a
-base).  To remove it, remove the two Docker images and corresponding containers
-and it's all gone.  This also makes it easier to run multiple servers since
+Everything for the Docker container is contained in two Docker volumes:
+configuration storage and `PKI` storage.
+To remove it, remove the Docker images, volumes and corresponding containers
+and it's all gone. This also makes it easier to run multiple servers since
 each lives in the bubble of the container (of course multiple IPs or separate
 ports are needed to communicate with the world).
 
 ### Some (arguable) Security Benefits
 
 At the simplest level compromising the container may prevent additional
-compromise of the server.  There are many arguments surrounding this, but the
+compromise of the server. There are many arguments surrounding this, but the
 take away is that it certainly makes it more difficult to break out of the
-container.  People are actively working on Linux containers to make this more
+container. People are actively working on Linux containers to make this more
 of a guarantee in the future.
-
-## Differences from jpetazzo/dockvpn
-
-* No longer uses serveconfig to distribute the configuration via https
-* Proper PKI support integrated into image
-* OpenVPN config files, PKI keys and certs are stored on a storage
-  volume for re-use across containers
-* Addition of tls-auth for HMAC security
 
 ## Tested On
 
 * Docker hosts:
-  * server a [Digital Ocean](https://www.digitalocean.com/?refcode=d19f7fe88c94) Droplet with 512 MB RAM running Ubuntu 14.04
+  - Raspberry Pi 3:
+     * Raspbian Jessie
+     * Debian Package from [Docker Hypriot](https://hypriot.com) 1.10.3
 * Clients
-  * Android App OpenVPN Connect 1.1.14 (built 56)
-     * OpenVPN core 3.0 android armv7a thumb2 32-bit
-  * OS X Mavericks with Tunnelblick 3.4beta26 (build 3828) using openvpn-2.3.4
-  * ArchLinux OpenVPN pkg 2.3.4-1
-  * 
+  - Android App OpenVPN Connect 1.1.17 (built 76)
+     * OpenVPN core 3.0.12 android armv7a thumb2 32-bit
+  - OS X El Capitan 10.11.6 with Tunnelblick 3.6.5 (build 4566)
 
 ## Having permissions issues with Selinux enabled?
 
 See [this](docs/selinux.md)
+
