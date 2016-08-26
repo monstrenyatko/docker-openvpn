@@ -26,7 +26,8 @@ Server and client certificates are shared between both instances via Docker volu
 * Initialize the `UDP` configuration files and certificates:
 
 		docker run -v $OVPN_DATA_UDP:/etc/openvpn --rm monstrenyatko/rpi-openvpn-server \
-			ovpn_genconfig -u udp://VPN.SERVER.DNS.NAME -n DNS.SERVER.IP -N
+			ovpn_genconfig -u udp://VPN.SERVER.DNS.NAME -n DNS.SERVER.IP -N \
+			-e "push dhcp-option DOMAIN DOMAIN.NAME"
 		docker run -v $OVPN_DATA_UDP:/etc/openvpn --rm -it monstrenyatko/rpi-openvpn-server ovpn_initpki
 
 * Move certificates to dedicated `PKI` storage:
@@ -63,7 +64,8 @@ Server and client certificates are shared between both instances via Docker volu
 * Initialize the `TCP` configuration files:
 
 		docker run -v $OVPN_DATA_TCP:/etc/openvpn --rm monstrenyatko/rpi-openvpn-server \
-			ovpn_genconfig -u tcp://VPN.SERVER.DNS.NAME -n DNS.SERVER.IP -N
+			ovpn_genconfig -u tcp://VPN.SERVER.DNS.NAME -n DNS.SERVER.IP -N \
+			-e "push dhcp-option DOMAIN DOMAIN.NAME"
 
 * Start `TCP` server process:
 
