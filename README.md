@@ -53,6 +53,7 @@ Server and client certificates are shared between both instances via Docker volu
 * Start `UDP` server process:
 
 		docker run -v $OVPN_DATA_UDP:/etc/openvpn -v $OVPN_DATA_PKI:/etc/openvpn/pki \
+			-v /etc/localtime:/etc/localtime \
 			--name openvpn-server-udp --restart unless-stopped -d -p 1194:1194/udp \
 			--cap-add=NET_ADMIN monstrenyatko/rpi-openvpn-server
 
@@ -70,6 +71,7 @@ Server and client certificates are shared between both instances via Docker volu
 * Start `TCP` server process:
 
 		docker run -v $OVPN_DATA_TCP:/etc/openvpn -v $OVPN_DATA_PKI:/etc/openvpn/pki \
+			-v /etc/localtime:/etc/localtime \
 			--name openvpn-server-tcp --restart unless-stopped -d -p 1194:1194/tcp \
 			--cap-add=NET_ADMIN monstrenyatko/rpi-openvpn-server
 
