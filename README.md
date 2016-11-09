@@ -5,7 +5,7 @@ OpenVPN server in a Docker container complete with an EasyRSA PKI CA.
 #### Upstream Links
 
 * Docker Registry @[monstrenyatko/rpi-openvpn-server](https://hub.docker.com/r/monstrenyatko/rpi-openvpn-server/)
-* GitHub @[monstrenyatko/rpi-openvpn-server](https://github.com/monstrenyatko/rpi-openvpn-server)
+* GitHub @[monstrenyatko/docker-rpi-openvpn-server](https://github.com/monstrenyatko/docker-rpi-openvpn-server)
 * Fork of GitHub @[kylemanna/docker-openvpn](https://github.com/kylemanna/docker-openvpn)
 
 ## Quick Start
