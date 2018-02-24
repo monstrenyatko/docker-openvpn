@@ -1,17 +1,15 @@
-# Original credit: https://github.com/kylemanna/docker-openvpn
+# Original credit: https://github.com/jpetazzo/dockvpn
 
 # Smallest base image
-FROM hypriot/rpi-alpine-scratch:v3.3
+FROM aarch64/alpine:3.5
 
-LABEL maintainer="Oleg Kovalenko <monstrenyatko@gmail.com>"
+LABEL maintainer="Kyle Manna <kyle@kylemanna.com>"
 
-# Testing: pamtester
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositories && \
+RUN echo "http://dl-4.alpinelinux.org/alpine/edge/community/" >> /etc/apk/repositories && \
+    echo "http://dl-4.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositories && \
     apk add --update openvpn iptables bash easy-rsa openvpn-auth-pam google-authenticator pamtester && \
     ln -s /usr/share/easy-rsa/easyrsa /usr/local/bin && \
     rm -rf /tmp/* /var/tmp/* /var/cache/apk/* /var/cache/distfiles/*
-
-RUN apk --update add openssl-dev linux-headers
 
 # Needed by scripts
 ENV OPENVPN /etc/openvpn
@@ -23,6 +21,9 @@ ENV EASYRSA_VARS_FILE $OPENVPN/vars
 ENV EASYRSA_CRL_DAYS 3650
 
 VOLUME ["/etc/openvpn"]
+
+# Internally uses port 1194/udp, remap using `docker run -p 443:1194/tcp`
+EXPOSE 1194/udp
 
 CMD ["ovpn_run"]
 

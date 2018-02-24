@@ -116,6 +116,10 @@ Backup archive `openvpn-pki.tar` will be created in current directory.
 		$ dig google.com        # won't use the search directives in resolv.conf
 		$ nslookup google.com   # will use search
 
+* Consider setting up a [systemd service](/docs/systemd.md) for automatic
+  start-up at boot time and restart in the event the OpenVPN daemon or Docker
+  crashes.
+
 ## How Does It Work?
 
 Initialize the Docker container using the `monstrenyatko/rpi-openvpn-server` image with the
@@ -130,7 +134,9 @@ included scripts to automatically generate:
 The OpenVPN server is started with the default run cmd of `ovpn_run`.
 
 The configuration is located in `/etc/openvpn`, and the Dockerfile
-declares that directory as a volume.
+declares that directory as a volume. It means that you can start another
+container with the `-v` argument, and access the configuration.
+The volume also holds the PKI keys and certs so that it could be backed up.
 
 Separate volume (mounted to `/etc/openvpn/pki`) holds the `PKI` keys
 and certificates so that it could be backed up.
@@ -219,7 +225,7 @@ take away is that it certainly makes it more difficult to break out of the
 container. People are actively working on Linux containers to make this more
 of a guarantee in the future.
 
-## Tested On
+## Originally Tested On
 
 * Docker hosts:
   - Raspberry Pi 3:
@@ -229,8 +235,4 @@ of a guarantee in the future.
   - Android App OpenVPN Connect 1.1.17 (built 76)
      * OpenVPN core 3.0.12 android armv7a thumb2 32-bit
   - OS X El Capitan 10.11.6 with Tunnelblick 3.6.5 (build 4566)
-
-## Having permissions issues with Selinux enabled?
-
-See [this](docs/selinux.md)
 

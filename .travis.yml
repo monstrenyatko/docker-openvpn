@@ -12,10 +12,22 @@ services:
 
 before_install:
     - docker --version
-    - docker build -t kylemanna/openvpn .
-    - docker inspect kylemanna/openvpn
-    - docker run kylemanna/openvpn openvpn --version || true # why does it returns 1?
-    - docker run kylemanna/openvpn openssl version
+
+install:
+    - git clone https://github.com/docker-library/official-images.git official-images
+
+# Assist with ci test debugging:
+#   - DEBUG=1
+before_script:
+    - image="kylemanna/openvpn"
+    - docker build -t "$image" .
+    - docker inspect "$image"
+    - docker run --rm "$image" openvpn --version || true # why does it return 1?
+    - docker run --rm "$image" openssl version
 
 script:
-    - ./test-ci.sh
+    - official-images/test/run.sh "$image"
+    - test/run.sh "$image"
+
+after_script:
+    - docker images
