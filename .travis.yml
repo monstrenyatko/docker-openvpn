@@ -1,0 +1,31 @@
+sudo: required
+services:
+  - docker
+language: bash
+env:
+  global:
+    - COMMIT=${TRAVIS_COMMIT::8}
+    - REPO=monstrenyatko/rpi-openvpn-server
+script:
+  # prepare qemu
+  - docker run --rm --privileged multiarch/qemu-user-static:register --reset
+  # build image
+  - ./build.sh "$REPO:$COMMIT"
+  # get release name
+  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
+  # tag and push
+  - >
+    if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+      echo "$DOCKER_PASS" | docker login -u="$DOCKER_USER" --password-stdin
+      docker tag $REPO:$COMMIT $REPO:$TRAVIS_BUILD_NUMBER
+      docker tag $REPO:$COMMIT $REPO:$TAG
+      if [ "$TRAVIS_BRANCH" == "master" ]; then
+        docker push $REPO:$COMMIT
+        docker push $REPO:$TRAVIS_BUILD_NUMBER
+      fi
+      docker push $REPO:$TAG
+    fi
+notifications:
+  email:
+    on_success: change
+    on_failure: always
