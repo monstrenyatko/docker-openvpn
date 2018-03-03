@@ -1,0 +1,29 @@
+version: '2'
+
+services:
+  server-udp:
+    image: monstrenyatko/rpi-openvpn-server
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - udp-config:/etc/openvpn:rw
+      - data-pki:/etc/openvpn/pki:rw
+    ports:
+      - 1194:1194/udp
+    restart: unless-stopped
+
+  server-tcp:
+    image: monstrenyatko/rpi-openvpn-server
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - tcp-config:/etc/openvpn:rw
+      - data-pki:/etc/openvpn/pki:rw
+    ports:
+      - 1194:1194/tcp
+    restart: unless-stopped
+
+volumes:
+  udp-config:
+  tcp-config:
+  data-pki:
