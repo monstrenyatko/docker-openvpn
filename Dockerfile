@@ -1,17 +1,13 @@
-# Original credit: https://github.com/kylemanna/docker-openvpn
-
-# Smallest base image
-FROM hypriot/rpi-alpine-scratch:v3.3
+FROM monstrenyatko/rpi-alpine:3.7
 
 LABEL maintainer="Oleg Kovalenko <monstrenyatko@gmail.com>"
 
-# Testing: pamtester
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositories && \
+RUN apk update && apk upgrade && \
+    # Add edge/testing for: pamtester
+    echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositories && \
     apk add --update openvpn iptables bash easy-rsa openvpn-auth-pam google-authenticator pamtester && \
     ln -s /usr/share/easy-rsa/easyrsa /usr/local/bin && \
     rm -rf /tmp/* /var/tmp/* /var/cache/apk/* /var/cache/distfiles/*
-
-RUN apk --update add openssl-dev linux-headers
 
 # Needed by scripts
 ENV OPENVPN /etc/openvpn
