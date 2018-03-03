@@ -29,7 +29,7 @@ Using docker-compose
     ```sh
       docker-compose -f docker-compose.init-pki.yml run --rm server-udp \
           ovpn_genconfig -u udp://VPN.SERVER.DNS.NAME -n DNS.SERVER.IP -N \
-          -e "push dhcp-option DOMAIN DOMAIN.NAME"
+          -e 'push "dhcp-option DOMAIN DOMAIN.NAME"'
     ```
 * Initialize the `PKI`:
 
@@ -70,7 +70,7 @@ Using docker-compose
     ```sh
       docker-compose run --rm server-tcp \
           ovpn_genconfig -u tcp://VPN.SERVER.DNS.NAME -n DNS.SERVER.IP -N \
-          -e "push dhcp-option DOMAIN DOMAIN.NAME"
+          -e 'push "dhcp-option DOMAIN DOMAIN.NAME"'
     ```
 * Start `TCP` server process:
 
@@ -107,7 +107,7 @@ Using docker
     ```sh
       docker run -v $OVPN_DATA_UDP:/etc/openvpn --rm $OVPN_IMG \
           ovpn_genconfig -u udp://VPN.SERVER.DNS.NAME -n DNS.SERVER.IP -N \
-          -e "push dhcp-option DOMAIN DOMAIN.NAME"
+          -e 'push "dhcp-option DOMAIN DOMAIN.NAME"'
     ```
 * Initialize the `PKI`:
 
@@ -158,7 +158,7 @@ Using docker
     ```sh
       docker run -v $OVPN_DATA_TCP:/etc/openvpn --rm $OVPN_IMG \
           ovpn_genconfig -u tcp://VPN.SERVER.DNS.NAME -n DNS.SERVER.IP -N \
-          -e "push dhcp-option DOMAIN DOMAIN.NAME"
+          -e 'push "dhcp-option DOMAIN DOMAIN.NAME"'
     ```
 * Start `TCP` server process:
 
