@@ -24,6 +24,18 @@ Server and client certificates are shared between both instances via `Docker` vo
 
 Using docker-compose
 --------------------
+* Configure environment:
+
+  - `DOCKER_REGISTRY`: [**OPTIONAL**] registry prefix to pull image from a custom `Docker` registry:
+
+    ```sh
+      export DOCKER_REGISTRY="my_registry_hostname:5000/"
+    ```
+* Pull prebuilt `Docker` image:
+
+  ```sh
+    docker-compose pull
+  ```
 * Initialize the `UDP` configuration files:
 
     ```sh
@@ -203,6 +215,23 @@ Backup archive `openvpn-pki.tar` will be created in current directory.
       docker-compose run --rm -v $(pwd):/backup server-udp \
           tar xvf /backup/openvpn-pki.tar -C /etc/openvpn/pki
     ```
+
+
+Build own image
+===============
+
+* `default` target platform:
+
+  ```sh
+    cd <path to sources>
+    DOCKER_BUILDKIT=1 docker build --tag <tag name> .
+  ```
+* `arm/v6` target platform:
+
+  ```sh
+    cd <path to sources>
+    DOCKER_BUILDKIT=1 docker build --platform=linux/arm/v6 --tag <tag name> .
+  ```
 
 
 How Does It Work?
