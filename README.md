@@ -214,22 +214,7 @@ See [kylemanna/docker-openvpn](https://github.com/kylemanna/docker-openvpn/blob/
 VPN Details
 ===========
 
-We use `tun` mode, because it works on the widest range of devices.
-`tap` mode, for instance, does not work on `Android`, except if the device
-is rooted.
-
-The topology used is `net30`, because it works on the widest range of OS.
-`p2p`, for instance, does not work on `Windows`.
-
-The UDP server uses `192.168.255.0/24` for dynamic clients by default.
-
-The client profile specifies `redirect-gateway def1`, meaning that after
-establishing the VPN connection, all traffic will go through the VPN.
-This might cause problems if you use local DNS which are not
-directly reachable, since you will try to reach them through the VPN
-and they might not answer to you. If that happens, use public DNS
-resolvers like those of `Google` (8.8.4.4 and 8.8.8.8) or `OpenDNS`
-(208.67.222.222 and 208.67.220.220).
+See [kylemanna/docker-openvpn](https://github.com/kylemanna/docker-openvpn#openvpn-details)
 
 
 Security Discussion
@@ -242,17 +227,3 @@ Benefits
 ========
 
 See [kylemanna/docker-openvpn](https://github.com/kylemanna/docker-openvpn/blob/master/README.md#benefits-of-running-inside-a-docker-container)
-
-
-Originally Tested On
-====================
-
-* Docker hosts:
-  - Raspberry Pi 3:
-     * Raspbian Jessie
-     * Debian Package from [Docker Hypriot](https://hypriot.com) 1.10.3
-* Clients
-  - Android App OpenVPN Connect 1.1.17 (built 76)
-     * OpenVPN core 3.0.12 android armv7a thumb2 32-bit
-  - OS X El Capitan 10.11.6 with Tunnelblick 3.6.5 (build 4566)
-
