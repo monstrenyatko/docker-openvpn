@@ -2,7 +2,7 @@ version: '2'
 
 services:
   server-udp:
-    image: monstrenyatko/rpi-openvpn-server
+    image: monstrenyatko/openvpn-server
     volumes:
       - udp-config:/etc/openvpn:rw
       - data-pki:/mnt/pki:rw

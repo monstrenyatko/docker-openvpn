@@ -1,7 +1,7 @@
-OpenVPN server Docker image for Raspberry Pi
-============================================
+OpenVPN server Docker image
+===========================
 
-[![Build Status](https://travis-ci.org/monstrenyatko/docker-rpi-openvpn-server.svg?branch=master)](https://travis-ci.org/monstrenyatko/docker-rpi-openvpn-server)
+[![Build Status](https://travis-ci.org/monstrenyatko/docker-openvpn-server.svg?branch=master)](https://travis-ci.org/monstrenyatko/docker-openvpn-server)
 
 
 About
@@ -11,8 +11,8 @@ About
 
 Upstream Links
 --------------
-* Docker Registry @[monstrenyatko/rpi-openvpn-server](https://hub.docker.com/r/monstrenyatko/rpi-openvpn-server/)
-* GitHub @[monstrenyatko/docker-rpi-openvpn-server](https://github.com/monstrenyatko/docker-rpi-openvpn-server)
+* Docker Registry @[monstrenyatko/openvpn-server](https://hub.docker.com/r/monstrenyatko/openvpn-server/)
+* GitHub @[monstrenyatko/docker-openvpn-server](https://github.com/monstrenyatko/docker-openvpn-server)
 * Fork of GitHub @[kylemanna/docker-openvpn](https://github.com/kylemanna/docker-openvpn)
 
 
@@ -100,7 +100,7 @@ Using docker
 * Select `docker` image:
 
     ```sh
-      OVPN_IMG="monstrenyatko/rpi-openvpn-server"
+      OVPN_IMG="monstrenyatko/openvpn-server"
     ```
 * Initialize the `UDP` configuration files:
 

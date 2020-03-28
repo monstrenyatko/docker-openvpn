@@ -2,7 +2,7 @@ version: '2'
 
 services:
   server-udp:
-    image: monstrenyatko/rpi-openvpn-server
+    image: monstrenyatko/openvpn-server
     cap_add:
       - NET_ADMIN
     volumes:
@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
 
   server-tcp:
-    image: monstrenyatko/rpi-openvpn-server
+    image: monstrenyatko/openvpn-server
     cap_add:
       - NET_ADMIN
     volumes:
