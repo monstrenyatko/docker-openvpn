@@ -5,21 +5,21 @@ LABEL maintainer="Oleg Kovalenko <monstrenyatko@gmail.com>"
 RUN apk update && apk upgrade && \
     # Add edge/testing for: pamtester
     echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositories && \
-    apk add --no-cache openvpn iptables bash easy-rsa openvpn-auth-pam google-authenticator pamtester && \
+    apk update && \
+    apk add openvpn iptables bash easy-rsa openvpn-auth-pam google-authenticator pamtester libqrencode && \
     ln -s /usr/share/easy-rsa/easyrsa /usr/local/bin && \
     rm -rf /root/.cache && mkdir -p /root/.cache && \
     rm -rf /tmp/* /var/tmp/* /var/cache/apk/* /var/cache/distfiles/*
 
 # Needed by scripts
-ENV OPENVPN /etc/openvpn
-ENV EASYRSA /usr/share/easy-rsa
-ENV EASYRSA_PKI $OPENVPN/pki
-ENV EASYRSA_VARS_FILE $OPENVPN/vars
-
-# Prevents refused client connection because of an expired CRL
-ENV EASYRSA_CRL_DAYS 3650
+ENV OPENVPN=/etc/openvpn
+ENV EASYRSA=/usr/share/easy-rsa \
+    EASYRSA_CRL_DAYS=3650 \
+    EASYRSA_PKI=$OPENVPN/pki
 
 VOLUME ["/etc/openvpn"]
+
+EXPOSE 1194
 
 CMD ["ovpn_run"]
 
