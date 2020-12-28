@@ -1,8 +1,7 @@
 OpenVPN server Docker image
 ===========================
 
-[![Build Status](https://travis-ci.org/monstrenyatko/docker-openvpn-server.svg?branch=master)](https://travis-ci.org/monstrenyatko/docker-openvpn-server)
-
+[![](https://github.com/monstrenyatko/docker-openvpn-server/workflows/ci/badge.svg?branch=master)](https://github.com/monstrenyatko/docker-openvpn-server/actions?query=workflow%3Aci)
 
 About
 =====
