@@ -1,13 +1,14 @@
-FROM alpine:3
+FROM monstrenyatko/alpine
 
 LABEL maintainer="Oleg Kovalenko <monstrenyatko@gmail.com>"
 
-RUN apk update && apk upgrade && \
+RUN \
     # Add edge/testing for: pamtester
     echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositories && \
     apk update && \
     apk add openvpn iptables bash easy-rsa openvpn-auth-pam google-authenticator pamtester libqrencode && \
     ln -s /usr/share/easy-rsa/easyrsa /usr/local/bin && \
+    # clean-up
     rm -rf /root/.cache && mkdir -p /root/.cache && \
     rm -rf /tmp/* /var/tmp/* /var/cache/apk/* /var/cache/distfiles/*
 
